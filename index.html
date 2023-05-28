@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Application</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto+Condensed:wght@700&display=swap" rel="stylesheet">
+  <style>
+    /* Global Styles */
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Chat Styles */
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 110vh;
+      justify-content: center;
+      align-items: center;
+      background-color: #f5f5f5;
+    }
+
+    .chat-content {
+      width: 350px;
+      max-height: 500px;
+      overflow-y: auto;
+      background-color: #fff;
+      border-radius: 5px;
+      padding: 10px;
+    }
+
+    .line {
+      display: flex;
+      margin-bottom: 10px;
+    }
+
+    .chat-box {
+      background-color: #e2e2e2;
+      padding: 10px;
+      border-radius: 5px;
+      max-width: 200px;
+    }
+
+    .mine {
+      margin-left: auto;
+      background-color: #2979ff;
+      color: #fff;
+    }
+
+    .input-container {
+      display: flex;
+      margin-top: 10px;
+    }
+
+    .chat-input {
+      flex: 1;
+      padding: 5px;
+      border-radius: 5px;
+      border: none;
+      margin-right: 5px;
+    }
+
+
+    .send-button {
+  background-color: #167df6;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+    };,
+    body {
+  background-color: #f2f2f2;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+}
+
+.container {
+  max-width: 600px;
+  margin: 0 auto;
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.header {
+  background-color: #167df6;
+  color: #fff;
+  padding: 20px;
+  text-align: center;
+}
+
+.header h1 {
+  margin: 0;
+}
+
+.chat-content {
+  height: 450px;
+  overflow-y: scroll;
+  padding: 30px;
+}
+
+.line {
+  margin-top: 10px;
+  display: flex;
+  animation-name: bounceIn;
+  animation-duration: 0.6s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: translateY(50%);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-20%);
+  }
+  100% {
+    transform: translateY(0%);
+  }}
+
+.chat-box {
+  background: #eee;
+  padding: 10px;
+  max-width: 200px;
+  border-radius: 5px;
+}
+
+.mine {
+  margin-left: auto;
+  background-color: #167df6;
+  color: #fff;
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+}
+
+.chat-box-input {
+  flex: 1;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  margin-right: 10px;
+}
+
+.send-button {
+  background-color: #167df6;
+  color: #fff;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 20px;
+  cursor: pointer;
+}
+
+.chat-container {
+    position: relative;
+    /* 다른 스타일 속성들 */
+  }
+
+
+  .ai-psychology-text {
+    position: absolute;
+    top: 10%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'Montserrat', sans-serif;
+    font-size: 24px;
+    color: #333;
+    /* 다른 스타일 속성들 */
+  }
+
+
+  </style>
+</head>
+<body>
+  <div class="chat-container">
+    <div class="ai-psychology-text">AI Psychology(심리상담 서비스)</div>
+    <div class="chat-content" id="chatContent">
+        <!-- Chat lines go here -->
+      </div>
+      <div class="input-container">
+        <input class="chat-box" id="input" placeholder="Type your message..." autofocus>
+        <button id="send">Send</button>
+      </div>
+      
+  </div>
+
+  <script type="module">
+    import { Configuration, OpenAIApi } from 'https://cdn.skypack.dev/openai';
+
+    const chatContent = document.getElementById('chatContent');
+    const inputField = document.getElementById('input');
+    const sendButton = document.getElementById('send');
+
+    const configuration = new Configuration({
+      apiKey: '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',
+    });
+    const openai = new OpenAIApi(configuration);
+
+    sendButton.addEventListener('click', sendMessage);
+    inputField.addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') {
+        sendMessage();
+      }
+    });
+
+    function sendMessage() {
+      const userInput = inputField.value.trim();
+      if (userInput === '') {
+        return;
+      }
+
+      addChatLine(userInput, true);
+      inputField.value = '';
+
+      openai.createCompletion({
+        model: "text-davinci-003",
+        prompt: getChatHistory(),
+        temperature: 0.7,
+        max_tokens: 256,
+        top_p: 1,
+        frequency_penalty: 0,
+        presence_penalty: 0,
+      }).then((response) => {
+        const botResponse = response.data.choices[0].text.trim();
+        addChatLine(botResponse, false);
+      }).catch((error) => {
+        console.error('Failed to fetch response from ChatGPT:', error);
+      });
+    }
+
+    function addChatLine(message, isUser) {
+  const chatBox = document.createElement('span');
+  chatBox.classList.add('chat-box');
+  chatBox.classList.toggle('mine', isUser);
+  chatBox.textContent = message;
+
+  const line = document.createElement('div');
+  line.classList.add('line');
+  line.appendChild(chatBox);
+
+  chatContent.appendChild(line);
+  chatContent.scrollTop = chatContent.scrollHeight;
+}
+
+    function getChatHistory() {
+  const chatLines = Array.from(chatContent.getElementsByClassName('line'));
+  const chatHistory = chatLines.map((line) => {
+    const chatBox = line.querySelector('.chat-box');
+    return chatBox.textContent.trim();
+  });
+  return chatHistory.join('\n');
+}
+
+  </script>
+</body>
+</html>
